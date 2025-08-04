@@ -89,8 +89,8 @@ function setupDatabase() {
         // Set SQL mode again for the database connection
         $pdo->exec("SET sql_mode = ''");
         
-        // Read and execute SQL schema
-        $sqlFile = 'database/schema.sql';
+        // Read and execute SQL schema (use fixed version if available)
+        $sqlFile = file_exists('database/schema_fixed.sql') ? 'database/schema_fixed.sql' : 'database/schema.sql';
         if (file_exists($sqlFile)) {
             $sql = file_get_contents($sqlFile);
             
