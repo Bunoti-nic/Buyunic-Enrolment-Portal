@@ -56,12 +56,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmt->execute([$user['id'], $verificationToken, $expiresAt]);
                         
                         // Send verification email
-                        $emailService = new EmailService();
-                        $emailSent = $emailService->sendVerificationEmail(
-                            $user['email'],
-                            $user['first_name'] . ' ' . $user['last_name'],
-                            $verificationToken
-                        );
+                        try {
+                            $emailService = new EmailService();
+                            $emailSent = $emailService->sendVerificationEmail(
+                                $user['email'],
+                                $user['first_name'] . ' ' . $user['last_name'],
+                                $verificationToken
+                            );
+                        } catch (Exception $e) {
+                            // Fallback to simple email service
+                            require_once '../classes/EmailFallback.php';
+                            $emailService = new EmailFallbackService();
+                            $emailSent = $emailService->sendVerificationEmail(
+                                $user['email'],
+                                $user['first_name'] . ' ' . $user['last_name'],
+                                $verificationToken
+                            );
+                        }
                         
                         if ($emailSent) {
                             $success = true;

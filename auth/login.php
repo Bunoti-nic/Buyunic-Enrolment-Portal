@@ -56,13 +56,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     $stmt->execute([$user['id'], $otpCode, $expiresAt]);
                                     
                                     // Send OTP email
-                                    $emailService = new EmailService();
-                                    $emailSent = $emailService->sendOTPEmail(
-                                        $user['email'],
-                                        $user['first_name'] . ' ' . $user['last_name'],
-                                        $otpCode,
-                                        'login'
-                                    );
+                                    try {
+                                        $emailService = new EmailService();
+                                        $emailSent = $emailService->sendOTPEmail(
+                                            $user['email'],
+                                            $user['first_name'] . ' ' . $user['last_name'],
+                                            $otpCode,
+                                            'login'
+                                        );
+                                    } catch (Exception $e) {
+                                        // Fallback to simple email service
+                                        require_once '../classes/EmailFallback.php';
+                                        $emailService = new EmailFallbackService();
+                                        $emailSent = $emailService->sendOTPEmail(
+                                            $user['email'],
+                                            $user['first_name'] . ' ' . $user['last_name'],
+                                            $otpCode,
+                                            'login'
+                                        );
+                                    }
                                     
                                     if ($emailSent) {
                                         $_SESSION['login_user_id'] = $user['id'];

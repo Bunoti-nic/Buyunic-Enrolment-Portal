@@ -1,5 +1,27 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+// Try to load composer autoload with multiple paths
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../vendor/autoload.php',
+    dirname(__DIR__) . '/vendor/autoload.php',
+    dirname(dirname(__DIR__)) . '/vendor/autoload.php'
+];
+
+$composerLoaded = false;
+foreach ($autoloadPaths as $autoloadPath) {
+    if (file_exists($autoloadPath)) {
+        require_once $autoloadPath;
+        $composerLoaded = true;
+        break;
+    }
+}
+
+if (!$composerLoaded) {
+    // Log error and throw exception
+    error_log("Composer autoload not found. Please run 'composer install' in the project root directory.");
+    throw new Exception("Email service dependencies not installed. Please run 'composer install'.");
+}
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;

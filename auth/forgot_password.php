@@ -39,12 +39,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->execute([$user['id'], $resetToken, $expiresAt]);
                     
                     // Send reset email
-                    $emailService = new EmailService();
-                    $emailSent = $emailService->sendPasswordResetEmail(
-                        $user['email'],
-                        $user['first_name'] . ' ' . $user['last_name'],
-                        $resetToken
-                    );
+                    try {
+                        $emailService = new EmailService();
+                        $emailSent = $emailService->sendPasswordResetEmail(
+                            $user['email'],
+                            $user['first_name'] . ' ' . $user['last_name'],
+                            $resetToken
+                        );
+                    } catch (Exception $e) {
+                        // Fallback to simple email service
+                        require_once '../classes/EmailFallback.php';
+                        $emailService = new EmailFallbackService();
+                        $emailSent = $emailService->sendPasswordResetEmail(
+                            $user['email'],
+                            $user['first_name'] . ' ' . $user['last_name'],
+                            $resetToken
+                        );
+                    }
                     
                     if ($emailSent) {
                         $success = true;

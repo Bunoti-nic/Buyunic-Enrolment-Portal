@@ -131,12 +131,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->commit();
                     
                     // Send verification email
-                    $emailService = new EmailService();
-                    $emailSent = $emailService->sendVerificationEmail(
-                        $step1Data['email'],
-                        $step1Data['first_name'] . ' ' . $step1Data['last_name'],
-                        $verificationToken
-                    );
+                    try {
+                        $emailService = new EmailService();
+                        $emailSent = $emailService->sendVerificationEmail(
+                            $step1Data['email'],
+                            $step1Data['first_name'] . ' ' . $step1Data['last_name'],
+                            $verificationToken
+                        );
+                    } catch (Exception $e) {
+                        // Fallback to simple email service if PHPMailer is not available
+                        require_once '../classes/EmailFallback.php';
+                        $emailService = new EmailFallbackService();
+                        $emailSent = $emailService->sendVerificationEmail(
+                            $step1Data['email'],
+                            $step1Data['first_name'] . ' ' . $step1Data['last_name'],
+                            $verificationToken
+                        );
+                    }
                     
                     if ($emailSent) {
                         // Clean up session data

@@ -78,6 +78,8 @@ Complete course management for:
    ```bash
    composer install
    ```
+   
+   **Note**: If Composer is not installed or this step fails, don't worry! The portal includes a fallback email system that works without PHPMailer. See `docs/composer_setup.md` for detailed setup instructions.
 
 3. **Configure database**
    - Edit `config/database.php` with your database credentials
