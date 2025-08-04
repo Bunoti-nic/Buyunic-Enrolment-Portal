@@ -98,6 +98,29 @@ Complete course management for:
 - **Admin**: admin@buyunic.ug / password
 - **Change immediately after setup!**
 
+### Payment Configuration
+
+#### MTN Mobile Money Setup
+- **Dial Code**: `*165*3#`
+- **Merchant ID**: `693183`
+- **Merchant Name**: BUYUNIC Training Center
+
+#### For Students - Payment Instructions
+1. Dial `*165*3#` on your MTN phone
+2. Select "Pay Merchant" option
+3. Enter Merchant ID: `693183`
+4. Enter the required amount
+5. Complete payment with your MTN Mobile Money PIN
+6. Save the transaction reference number
+7. Upload payment proof in your application portal
+
+#### Payment Amounts
+- **Non-Internees**: UGX 30,000 (Registration Fee)
+- **Internees**: FREE (No registration fee)
+- **Course Fees**: As listed in the training program catalog
+
+See `docs/payment_instructions.md` for detailed payment guide.
+
 ## 🗂 File Structure
 
 ```

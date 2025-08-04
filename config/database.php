@@ -62,6 +62,15 @@ define('JWT_SECRET', 'your-jwt-secret-key-here');
 define('PESAPAL_CONSUMER_KEY', 'your-pesapal-consumer-key');
 define('PESAPAL_CONSUMER_SECRET', 'your-pesapal-consumer-secret');
 
+// MTN Mobile Money Configuration
+define('MTN_MOBILE_MONEY_DIAL', '*165*3#');
+define('MTN_MOBILE_MONEY_MERCHANT_ID', '693183');
+define('MTN_MOBILE_MONEY_MERCHANT_NAME', 'BUYUNIC Training Center');
+
+// Additional payment gateway configurations (for future integration)
+define('MOBILE_MONEY_API_KEY', 'your_mobile_money_api_key');
+define('FLEXIPAY_API_KEY', 'your_flexipay_api_key');
+
 // Application specific settings
 define('OTP_EXPIRY', 300); // 5 minutes
 define('PASSWORD_RESET_EXPIRY', 3600); // 1 hour

@@ -135,6 +135,16 @@
                         <h3>Flexible Schedule</h3>
                         <p>Choose from morning, afternoon, or weekend classes</p>
                     </div>
+                    <div class="feature-card">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h3>Easy Mobile Payment</h3>
+                        <p>Pay securely with MTN Mobile Money. Dial *165*3# and use Merchant ID: 693183</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Secure Application</h3>
+                        <p>Your data is protected with advanced security measures and encryption</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -163,6 +173,13 @@
                             <div>
                                 <h4>Email</h4>
                                 <p>info@buyunic.ug | apply@buyunic.ug</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <div>
+                                <h4>MTN Mobile Money</h4>
+                                <p>Dial: *165*3# | Merchant ID: 693183</p>
                             </div>
                         </div>
                     </div>
