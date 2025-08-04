@@ -75,6 +75,9 @@ function setupDatabase() {
         $pdo = new PDO("mysql:host={$host}", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
+        // Set SQL mode to handle timestamps properly
+        $pdo->exec("SET sql_mode = ''");
+        
         // Create database if it doesn't exist
         $pdo->exec("CREATE DATABASE IF NOT EXISTS {$dbname} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
         $success[] = "Database '{$dbname}' created or already exists ✓";
@@ -82,6 +85,9 @@ function setupDatabase() {
         // Connect to the specific database
         $pdo = new PDO("mysql:host={$host};dbname={$dbname}", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        
+        // Set SQL mode again for the database connection
+        $pdo->exec("SET sql_mode = ''");
         
         // Read and execute SQL schema
         $sqlFile = 'database/schema.sql';

@@ -1,13 +1,41 @@
--- BUYUNIC Enrollment Portal Database Schema
--- Created: 2024
+-- BUYUNIC Enrollment Portal - Manual Database Setup
+-- Run this script directly in MySQL/phpMyAdmin if you encounter timestamp errors
 
+-- Step 1: Set SQL mode to be more permissive
+SET sql_mode = '';
+
+-- Step 2: Create database
 CREATE DATABASE IF NOT EXISTS buyunic_enrollment CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE buyunic_enrollment;
 
--- Set SQL mode to handle timestamps properly
-SET sql_mode = '';
+-- Step 3: Drop existing tables if they exist (CAUTION: This will delete data!)
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS admin_logs;
+DROP TABLE IF EXISTS pdf_generations;
+DROP TABLE IF EXISTS qr_verifications;
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS user_sessions;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS document_uploads;
+DROP TABLE IF EXISTS program_selections;
+DROP TABLE IF EXISTS internee_information;
+DROP TABLE IF EXISTS academic_background;
+DROP TABLE IF EXISTS next_of_kin;
+DROP TABLE IF EXISTS personal_details;
+DROP TABLE IF EXISTS consents;
+DROP TABLE IF EXISTS applications;
+DROP TABLE IF EXISTS otp_tokens;
+DROP TABLE IF EXISTS password_reset_tokens;
+DROP TABLE IF EXISTS email_verification_tokens;
+DROP TABLE IF EXISTS training_programs;
+DROP TABLE IF EXISTS system_settings;
+DROP TABLE IF EXISTS users;
+SET FOREIGN_KEY_CHECKS = 1;
 
--- Users table (for both applicants and admins)
+-- Step 4: Create all tables with proper timestamp handling
+
+-- Users table
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -18,11 +46,11 @@ CREATE TABLE users (
     user_type ENUM('applicant', 'admin', 'sub_admin') DEFAULT 'applicant',
     status ENUM('pending', 'active', 'suspended', 'banned') DEFAULT 'pending',
     email_verified BOOLEAN DEFAULT FALSE,
-    last_login TIMESTAMP NULL DEFAULT NULL,
+    last_login DATETIME NULL,
     login_attempts INT DEFAULT 0,
-    locked_until TIMESTAMP NULL DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    locked_until DATETIME NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Email verification tokens
@@ -30,9 +58,9 @@ CREATE TABLE email_verification_tokens (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(255) NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
+    expires_at DATETIME NOT NULL,
     used BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -41,25 +69,25 @@ CREATE TABLE password_reset_tokens (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(255) NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
+    expires_at DATETIME NOT NULL,
     used BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- OTP tokens for MFA
+-- OTP tokens
 CREATE TABLE otp_tokens (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     otp_code VARCHAR(10) NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
+    expires_at DATETIME NOT NULL,
     used BOOLEAN DEFAULT FALSE,
     purpose ENUM('login', 'verification', 'password_reset') DEFAULT 'login',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Training programs catalog
+-- Training programs
 CREATE TABLE training_programs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     category VARCHAR(100) NOT NULL,
@@ -68,11 +96,11 @@ CREATE TABLE training_programs (
     duration VARCHAR(50) NOT NULL,
     description TEXT,
     status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Applications table
+-- Applications
 CREATE TABLE applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -80,12 +108,12 @@ CREATE TABLE applications (
     status ENUM('draft', 'submitted', 'under_review', 'approved', 'rejected', 'returned_for_edit') DEFAULT 'draft',
     progress_percentage INT DEFAULT 0,
     edit_count INT DEFAULT 0,
-    submitted_at TIMESTAMP NULL DEFAULT NULL,
-    reviewed_at TIMESTAMP NULL DEFAULT NULL,
+    submitted_at DATETIME NULL,
+    reviewed_at DATETIME NULL,
     reviewer_id INT NULL,
     review_notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (reviewer_id) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -115,12 +143,12 @@ CREATE TABLE personal_details (
     phone_primary VARCHAR(20),
     phone_secondary VARCHAR(20),
     email_personal VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
 );
 
--- Next of kin details
+-- Next of kin
 CREATE TABLE next_of_kin (
     id INT AUTO_INCREMENT PRIMARY KEY,
     application_id INT NOT NULL,
@@ -130,8 +158,8 @@ CREATE TABLE next_of_kin (
     email VARCHAR(255),
     address VARCHAR(500),
     occupation VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
 );
 
@@ -146,8 +174,8 @@ CREATE TABLE academic_background (
     end_date DATE,
     grade_obtained VARCHAR(50),
     is_current BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
 );
 
@@ -165,8 +193,8 @@ CREATE TABLE internee_information (
     interest_areas TEXT,
     previous_experience TEXT,
     career_goals TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
 );
 
@@ -176,7 +204,7 @@ CREATE TABLE program_selections (
     application_id INT NOT NULL,
     program_id INT NOT NULL,
     is_primary BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
     FOREIGN KEY (program_id) REFERENCES training_programs(id) ON DELETE CASCADE
 );
@@ -193,14 +221,14 @@ CREATE TABLE document_uploads (
     mime_type VARCHAR(100) NOT NULL,
     upload_status ENUM('pending', 'approved', 'rejected', 'flagged') DEFAULT 'pending',
     admin_notes TEXT,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    reviewed_at TIMESTAMP NULL DEFAULT NULL,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at DATETIME NULL,
     reviewed_by INT NULL,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
     FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Payments table
+-- Payments
 CREATE TABLE payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     application_id INT NOT NULL,
@@ -212,13 +240,13 @@ CREATE TABLE payments (
     transaction_id VARCHAR(255),
     payment_phone VARCHAR(20),
     payment_email VARCHAR(255),
-    payment_date TIMESTAMP NULL DEFAULT NULL,
+    payment_date DATETIME NULL,
     verified_by INT NULL,
-    verification_date TIMESTAMP NULL DEFAULT NULL,
+    verification_date DATETIME NULL,
     receipt_number VARCHAR(100),
     gateway_response TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
     FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -230,10 +258,10 @@ CREATE TABLE user_sessions (
     session_id VARCHAR(255) NOT NULL,
     ip_address VARCHAR(45),
     user_agent TEXT,
-    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
+    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -246,12 +274,12 @@ CREATE TABLE notifications (
     type ENUM('info', 'success', 'warning', 'error') DEFAULT 'info',
     is_read BOOLEAN DEFAULT FALSE,
     action_url VARCHAR(500),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    read_at TIMESTAMP NULL DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    read_at DATETIME NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Messages (2-way communication)
+-- Messages
 CREATE TABLE messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     application_id INT NOT NULL,
@@ -260,9 +288,9 @@ CREATE TABLE messages (
     subject VARCHAR(200),
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
-    read_at TIMESTAMP NULL DEFAULT NULL,
+    read_at DATETIME NULL,
     parent_message_id INT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -280,11 +308,11 @@ CREATE TABLE admin_logs (
     ip_address VARCHAR(45),
     user_agent TEXT,
     additional_data JSON,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- PDF generations log
+-- PDF generations
 CREATE TABLE pdf_generations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     application_id INT NOT NULL,
@@ -292,12 +320,12 @@ CREATE TABLE pdf_generations (
     file_path VARCHAR(500) NOT NULL,
     qr_code VARCHAR(255),
     generated_by INT NOT NULL,
-    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
     FOREIGN KEY (generated_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Consent and privacy acknowledgements
+-- Consents
 CREATE TABLE consents (
     id INT AUTO_INCREMENT PRIMARY KEY,
     application_id INT NOT NULL,
@@ -307,21 +335,21 @@ CREATE TABLE consents (
     marketing_communications BOOLEAN DEFAULT FALSE,
     ip_address VARCHAR(45),
     user_agent TEXT,
-    consent_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    consent_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
 );
 
--- QR code verifications
+-- QR verifications
 CREATE TABLE qr_verifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     verification_code VARCHAR(255) UNIQUE NOT NULL,
     application_id INT NOT NULL,
     document_type VARCHAR(100) NOT NULL,
     is_valid BOOLEAN DEFAULT TRUE,
-    verified_at TIMESTAMP NULL DEFAULT NULL,
+    verified_at DATETIME NULL,
     verifier_info TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NULL DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NULL,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
 );
 
@@ -333,29 +361,26 @@ CREATE TABLE system_settings (
     setting_type ENUM('string', 'number', 'boolean', 'json') DEFAULT 'string',
     description TEXT,
     updated_by INT,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Insert default training programs
+-- Step 5: Insert default data
+
+-- Training programs
 INSERT INTO training_programs (category, program_name, amount, duration, description) VALUES
--- Microsoft Office Suite
 ('MICROSOFT OFFICE SUITE', 'General intro + MS Word (2-in-1)', 120000, '3 Wks (2 hrs/day)', 'Comprehensive introduction to Microsoft Office and Word processing'),
 ('MICROSOFT OFFICE SUITE', 'Microsoft PowerPoint', 50000, '2 Wks', 'Create professional presentations and slideshows'),
 ('MICROSOFT OFFICE SUITE', 'Microsoft Excel', 60000, '2 Wks', 'Master spreadsheets, formulas, and data analysis'),
 ('MICROSOFT OFFICE SUITE', 'Microsoft Access/Database', 60000, '2 Wks', 'Database design and management with Access'),
 ('MICROSOFT OFFICE SUITE', 'Microsoft Publisher', 50000, '2 Wks', 'Desktop publishing and marketing materials'),
 ('MICROSOFT OFFICE SUITE', 'Internet Basics', 50000, '2 Wks', 'Web browsing, email, and online communication'),
-
--- Graphics & Web Development
 ('GRAPHICS & WEB DEVELOPMENT', 'Adobe Photoshop', 550000, '4 Wks', 'Professional image editing and digital design'),
 ('GRAPHICS & WEB DEVELOPMENT', 'Adobe Illustrator', 550000, '4 Wks', 'Vector graphics and logo design'),
 ('GRAPHICS & WEB DEVELOPMENT', 'PageMaker', 250000, '4 Wks', 'Desktop publishing and layout design'),
 ('GRAPHICS & WEB DEVELOPMENT', 'HTML Language', 600000, '4 Wks', 'Web development fundamentals with HTML'),
 ('GRAPHICS & WEB DEVELOPMENT', 'WordPress CMS', 500000, '4 Wks', 'Content management and website creation'),
 ('GRAPHICS & WEB DEVELOPMENT', 'CorelDRAW', 550000, '4 Wks', 'Vector graphics and design software'),
-
--- Specialized IT Programs
 ('SPECIALIZED IT PROGRAMS', 'Computer Networking', 550000, '6 Wks', 'Network setup, configuration, and troubleshooting'),
 ('SPECIALIZED IT PROGRAMS', 'Hardware/Software Troubleshooting', 300000, '3 Wks', 'Computer repair and maintenance'),
 ('SPECIALIZED IT PROGRAMS', 'CCTV Installation & Config', 550000, '3 Wks', 'Security camera systems installation'),
@@ -365,15 +390,13 @@ INSERT INTO training_programs (category, program_name, amount, duration, descrip
 ('SPECIALIZED IT PROGRAMS', 'SPSS', 550000, '6 Wks', 'Statistical analysis software'),
 ('SPECIALIZED IT PROGRAMS', 'Stata', 350000, '6 Wks', 'Statistical software package'),
 ('SPECIALIZED IT PROGRAMS', 'Epi Data', 350000, '6 Wks', 'Data entry and analysis'),
-
--- Internship & Research
 ('INTERNSHIP & RESEARCH', 'Custom IT Project / Research-Based Training', 400000, '2 Months', 'Tailored IT projects and research opportunities');
 
--- Insert default admin user (password: 'password' - change immediately!)
+-- Default admin user (password: 'password' - CHANGE IMMEDIATELY!)
 INSERT INTO users (email, password_hash, first_name, last_name, user_type, status, email_verified) VALUES
 ('admin@buyunic.ug', '$2y$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/UnuaDHdmbxQs/qxWu', 'System', 'Administrator', 'admin', 'active', TRUE);
 
--- Insert system settings
+-- System settings
 INSERT INTO system_settings (setting_key, setting_value, setting_type, description) VALUES
 ('registration_fee', '30000', 'number', 'Registration fee for non-internees'),
 ('max_edit_attempts', '3', 'number', 'Maximum number of edit attempts for applications'),
@@ -382,7 +405,7 @@ INSERT INTO system_settings (setting_key, setting_value, setting_type, descripti
 ('maintenance_mode', 'false', 'boolean', 'Enable/disable maintenance mode'),
 ('auto_approve_payments', 'false', 'boolean', 'Auto approve verified payments');
 
--- Create indexes for better performance
+-- Step 6: Create indexes for performance
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_type_status ON users(user_type, status);
 CREATE INDEX idx_applications_user_id ON applications(user_id);
@@ -394,3 +417,9 @@ CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_messages_application_id ON messages(application_id);
 CREATE INDEX idx_admin_logs_admin_id ON admin_logs(admin_id);
 CREATE INDEX idx_admin_logs_created_at ON admin_logs(created_at);
+
+-- Verify setup
+SELECT 'Database setup completed successfully!' as status;
+SELECT COUNT(*) as training_programs_count FROM training_programs;
+SELECT COUNT(*) as admin_users_count FROM users WHERE user_type = 'admin';
+SHOW TABLES;
